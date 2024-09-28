@@ -797,7 +797,7 @@ library.createSlider = function(option, parent)
 			option.fill:TweenSize(UDim2.new(value / (self.max - self.min), 0, 1, 0), "Out", "Quad", 0.1, true)
 		end
 		library.flags[self.flag] = value
-		self.value = value
+		self.value = type(value) == "number" and tonumber(value) or value
 		option.title.Text = (option.text == "nil" and "" or option.text .. ": ") .. option.value .. option.suffix
 		if not nocallback then
 			self.callback(value)
