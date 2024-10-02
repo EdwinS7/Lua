@@ -7,7 +7,7 @@ if getgenv().library then
 	getgenv().library:Unload()
 end
 
-local library = {design = getgenv().design == "kali" and "kali", tabs = {}, draggable = true, flags = {}, title = "awakenkn-hub", open = false, mousestate = inputService.MouseIconEnabled,popup = nil, instances = {}, connections = {}, options = {}, notifications = {}, tabSize = 0, theme = {}, foldername = "awakenkn-hubv3", fileext = ".json"}
+local library = {design = getgenv().design == "kali" and "kali", tabs = {}, draggable = true, flags = {}, title = "awakenkn-hub", status = "hi -@edwn", open = false, mousestate = inputService.MouseIconEnabled,popup = nil, instances = {}, connections = {}, options = {}, notifications = {}, tabSize = 0, theme = {}, foldername = "awakenkn-hubv3", fileext = ".json"}
 if getgenv().scripttitle then
     library.title = getgenv().scripttitle
 end
@@ -92,7 +92,7 @@ end
 
 function library:LoadConfig(config)
 	if table.find(self:GetConfigs(), config) then
-		local Read, Config = pcall(function() return game:GetService"HttpService":JSONDecode(readfile(self.foldername .. "/" .. config .. self.fileext)) end)
+		local Read, Config = pcall(function() return game:GetService"HttpService":JSONDecode(readfile(self.foldername .. "\\" .. config .. self.fileext)) end)
 		Config = Read and Config or {}
 		for _, option in next, self.options do
 			if option.hasInit then
@@ -123,7 +123,7 @@ function library:SaveConfig(config)
 	local Config = {}
 
 	if table.find(self:GetConfigs(), config) then
-		Config = game:GetService"HttpService":JSONDecode(readfile(self.foldername .. "/" .. config .. self.fileext))
+		Config = game:GetService"HttpService":JSONDecode(readfile(self.foldername .. "\\" .. config .. self.fileext))
 	end
 
 	for _, option in next, self.options do
@@ -147,7 +147,7 @@ function library:SaveConfig(config)
 		end
 	end
 
-	writefile(self.foldername .. "/" .. config .. self.fileext, game:GetService"HttpService":JSONEncode(Config))
+	writefile(self.foldername .. "\\" .. config .. self.fileext, game:GetService"HttpService":JSONEncode(Config))
 
 	return Config -- TempleScript addition
 end
@@ -162,7 +162,7 @@ function library:GetConfigs()
 	for i,v in next, listfiles(self.foldername) do
 		if v:sub(#v - #self.fileext + 1, #v) == self.fileext then
 			a = a + 1
-			v = v:gsub(self.foldername .. "/", "")
+			v = v:gsub(self.foldername .. "\\", "")
 			v = v:gsub(self.fileext, "")
 			table.insert(files, a, v)
 		end
@@ -2527,6 +2527,18 @@ function library:Init(size)
 		TextSize = 18,
 		TextColor3 = Color3.new(1, 1, 1),
 		TextXAlignment = Enum.TextXAlignment.Left,
+		Parent = self.main
+	})
+
+	self:Create("TextLabel", {
+		Position = UDim2.new(1, -106, 0, -1), -- Dock to the right with padding
+    	Size = UDim2.new(0, 100, 0, 20),     -- Fixed width for the text
+		BackgroundTransparency = 1,
+		Text = tostring(self.status),
+		Font = Enum.Font.Code,
+		TextSize = 18,
+		TextColor3 = Color3.new(1, 1, 1),
+		TextXAlignment = Enum.TextXAlignment.Right,
 		Parent = self.main
 	})
 
