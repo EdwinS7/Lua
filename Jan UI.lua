@@ -92,7 +92,7 @@ end
 
 function library:LoadConfig(config)
 	if table.find(self:GetConfigs(), config) then
-		local Read, Config = pcall(function() return game:GetService"HttpService":JSONDecode(readfile(self.foldername .. "\\" .. config .. self.fileext)) end)
+		local Read, Config = pcall(function() return game:GetService"HttpService":JSONDecode(readfile(self.foldername .. "//" .. config .. self.fileext)) end)
 		Config = Read and Config or {}
 		for _, option in next, self.options do
 			if option.hasInit then
@@ -123,7 +123,7 @@ function library:SaveConfig(config)
 	local Config = {}
 
 	if table.find(self:GetConfigs(), config) then
-		Config = game:GetService"HttpService":JSONDecode(readfile(self.foldername .. "\\" .. config .. self.fileext))
+		Config = game:GetService"HttpService":JSONDecode(readfile(self.foldername .. "//" .. config .. self.fileext))
 	end
 
 	for _, option in next, self.options do
@@ -147,7 +147,7 @@ function library:SaveConfig(config)
 		end
 	end
 
-	writefile(self.foldername .. "\\" .. config .. self.fileext, game:GetService"HttpService":JSONEncode(Config))
+	writefile(self.foldername .. "//" .. config .. self.fileext, game:GetService"HttpService":JSONEncode(Config))
 
 	return Config -- TempleScript addition
 end
@@ -162,7 +162,7 @@ function library:GetConfigs()
 	for i,v in next, listfiles(self.foldername) do
 		if v:sub(#v - #self.fileext + 1, #v) == self.fileext then
 			a = a + 1
-			v = v:gsub(self.foldername .. "\\", "")
+			v = v:gsub("^.*[\\/]", "")
 			v = v:gsub(self.fileext, "")
 			table.insert(files, a, v)
 		end
