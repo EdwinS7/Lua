@@ -3,18 +3,40 @@ getgenv().runService = game:GetService"RunService"
 getgenv().textService = game:GetService"TextService"
 getgenv().inputService = game:GetService"UserInputService"
 getgenv().tweenService = game:GetService"TweenService"
+
 if getgenv().library then
 	getgenv().library:Unload()
 end
 
-local library = {design = getgenv().design == "kali" and "kali", tabs = {}, draggable = true, flags = {}, title = "awakenkn-hub", status = "hi -@edwn", open = false, mousestate = inputService.MouseIconEnabled,popup = nil, instances = {}, connections = {}, options = {}, notifications = {}, tabSize = 0, theme = {}, foldername = "awakenkn-hubv3", fileext = ".json"}
-if getgenv().scripttitle then
-    library.title = getgenv().scripttitle
-end
-if getgenv().FolderName then
-    library.foldername = getgenv().FolderName
-end
-getgenv().library = library
+local library = {
+	design = getgenv().design == "kali" and "kali",
+
+	tabs = {},
+	flags = {
+		["Menu Accent Color"] = Color3.fromRGB(255, 160, 60),
+	},
+
+	draggable = true,
+
+	title = "Jan but better",
+	status = "@fuckuneedthisfor / dev",
+
+	open = false, 
+	
+	mousestate = inputService.MouseIconEnabled,
+	
+	popup = nil, 
+	instances = {}, 
+	connections = {}, 
+	options = {}, 
+	notifications = {}, 
+
+	tabSize = 0, 
+	theme = {}, 
+
+	foldername = "Jan Settings",
+	fileext = ".cfg"
+}
 
 local dragging, dragInput, dragStart, startPos, dragObject
 
@@ -39,6 +61,7 @@ end
 
 
 local chromaColor
+
 spawn(function()
 	while library and wait() do
 		chromaColor = Color3.fromHSV(tick() % 6 / 6, 1, 1)
@@ -47,33 +70,45 @@ end)
 
 function library:Create(class, properties)
 	properties = properties or {}
-	if not class then return end
+
+	if not class then
+		return
+	end
+	
 	local a = class == "Square" or class == "Line" or class == "Text" or class == "Quad" or class == "Circle" or class == "Triangle"
 	local t = a and Drawing or Instance
 	local inst = t.new(class)
+
 	for property, value in next, properties do
 		inst[property] = value
 	end
+
 	table.insert(self.instances, {object = inst, method = a})
+
 	return inst
 end
 
 function library:AddConnection(connection, name, callback)
 	callback = type(name) == "function" and name or callback
+
 	connection = connection:connect(callback)
+
 	if name ~= callback then
 		self.connections[name] = connection
 	else
 		table.insert(self.connections, connection)
 	end
+
 	return connection
 end
 
 function library:Unload()
 	inputService.MouseIconEnabled = self.mousestate
+
 	for _, c in next, self.connections do
 		c:Disconnect()
 	end
+
 	for _, i in next, self.instances do
 		if i.method then
 			pcall(function() i.object:Remove() end)
@@ -81,11 +116,13 @@ function library:Unload()
 			i.object:Destroy()
 		end
 	end
+
 	for _, o in next, self.options do
 		if o.type == "toggle" then
 			coroutine.resume(coroutine.create(o.SetState, o))
 		end
 	end
+
 	library = nil
 	getgenv().library = nil
 end
@@ -149,7 +186,7 @@ function library:SaveConfig(config)
 
 	writefile(self.foldername .. "//" .. config .. self.fileext, game:GetService"HttpService":JSONEncode(Config))
 
-	return Config -- TempleScript addition
+	return Config
 end
 
 function library:GetConfigs()
@@ -157,16 +194,22 @@ function library:GetConfigs()
 		makefolder(self.foldername)
 		return {}
 	end
+
 	local files = {}
 	local a = 0
+
 	for i,v in next, listfiles(self.foldername) do
 		if v:sub(#v - #self.fileext + 1, #v) == self.fileext then
 			a = a + 1
+
+			-- NOTE: Haha wtf? did this while high but it gets the string AFTER the last \ or wtv tf -@fuckuneedthisfor
 			v = v:gsub("^.*[\\/]", "")
 			v = v:gsub(self.fileext, "")
+
 			table.insert(files, a, v)
 		end
 	end
+
 	return files
 end
 
@@ -358,15 +401,25 @@ library.createToggle = function(option, parent)
 		Position = UDim2.new(0, 24, 0, 0),
 		Size = UDim2.new(1, 0, 1, 0),
 		BackgroundTransparency = 1,
-		Text = option.text,
-		TextColor3 =  option.state and Color3.fromRGB(210, 210, 210) or Color3.fromRGB(180, 180, 180),
+		Text = option.text .. (option.warning and " \u{26A0}\u{FE0F}" or ""), -- ⚠️
+		TextColor3 = option.state and Color3.fromRGB(210, 210, 210) or Color3.fromRGB(180, 180, 180),
 		TextSize = 15,
 		Font = Enum.Font.Code,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		Parent = option.interest
 	})
 
+	if option.special then
+		table.insert(library.theme, option.title)
+	end
+
 	option.interest.InputBegan:connect(function(input)
+		if option.special then
+			option.title.TextColor3 = library.flags["Menu Accent Color"]
+		elseif option.warning then
+			option.title.TextColor3 = Color3.fromRGB(255, 160, 60)
+		end
+		
 		if input.UserInputType.Name == "MouseButton1" then
 			option:SetState(not option.state)
 		end
@@ -418,6 +471,13 @@ library.createToggle = function(option, parent)
 		library.flags[self.flag] = state
 		self.state = state
 		option.title.TextColor3 = state and Color3.fromRGB(210, 210, 210) or Color3.fromRGB(160, 160, 160)
+
+		if option.special then
+			option.title.TextColor3 = library.flags["Menu Accent Color"]
+		elseif option.warning then
+			option.title.TextColor3 = Color3.fromRGB(255, 160, 60)
+		end
+
 		if option.style then
 			tickboxOverlay.Visible = state
 		else
@@ -863,7 +923,7 @@ library.createList = function(option, parent)
 		Size = UDim2.new(1, -12, 0, 22),
 		BackgroundColor3 = Color3.fromRGB(50, 50, 50),
 		BorderColor3 = Color3.new(),
-		Text = " " .. (typeof(option.value) == "string" and option.value or getMultiText()),
+		Text = " NIGGERERERERERERERER" .. (typeof(option.value) == "string" and (option.value or "empty") or getMultiText()),
 		TextSize = 15,
 		Font = Enum.Font.Code,
 		TextColor3 = Color3.new(1, 1, 1),
@@ -1120,9 +1180,9 @@ library.createList = function(option, parent)
 				value[v] = false
 			end
 		end
-		self.value = typeof(value) == "table" and value or tostring(table.find(self.values, value) and value or self.values[1])
+		self.value = typeof(value) == "table" and value or tostring(table.find(self.values, value) and value or self.values[1] or "empty")
 		library.flags[self.flag] = self.value
-		option.listvalue.Text = " " .. (self.multiselect and getMultiText() or self.value)
+		option.listvalue.Text = " " .. (self.multiselect and getMultiText() or (self.value or "empty"))
 		if self.multiselect then
 			for name, label in next, self.labels do
 				label.TextTransparency = self.value[name] and 1 or 0
@@ -1811,6 +1871,8 @@ function library:AddTab(title, pos)
 				option.canInit = (option.canInit ~= nil and option.canInit) or true
 				option.tip = option.tip and tostring(option.tip)
 				option.style = option.style == 2
+				option.special = option.special or false
+				option.warning = option.warning or false
 				library.flags[option.flag] = option.state
 				table.insert(self.options, option)
 				library.options[option.flag] = option
@@ -2082,12 +2144,26 @@ function library:AddTab(title, pos)
 				return option
 			end
 
+			function UpdateAccentColor(color)
+				library.currentTab.button.TextColor3 = color
+        
+				for _, instance in pairs(library.theme) do
+					if instance.ClassName == "TextLabel" then
+						instance.TextColor3 = color
+					elseif instance.ClassName == "ImageLabel" then
+						instance.ImageColor3 = color
+					else
+						instance.BackgroundColor3 = color
+					end
+				end
+			end
+
 			function section:AddColor(option)
 				option = typeof(option) == "table" and option or {}
 				option.section = self
 				option.text = tostring(option.text)
 				option.color = typeof(option.color) == "table" and Color3.new(option.color[1], option.color[2], option.color[3]) or option.color or Color3.new(1, 1, 1)
-				option.callback = typeof(option.callback) == "function" and option.callback or function() end
+				option.callback = typeof(option.callback) == "function" and option.callback or (option.text == "Menu accent color" and UpdateAccentColor or function() end)
 				option.calltrans = typeof(option.calltrans) == "function" and option.calltrans or (option.calltrans == 1 and option.callback) or function() end
 				option.open = false
 				option.trans = tonumber(option.trans)
@@ -2281,7 +2357,7 @@ function library:AddTab(title, pos)
 
 		self.button.InputBegan:connect(function(input)
 			if input.UserInputType.Name == "MouseButton1" then
-				library:selectTab(self)
+				library:SelectTab(self)
 			end
 		end)
 
@@ -2564,7 +2640,17 @@ function library:Init(size)
 		BorderSizePixel = 0,
 		Parent = self.main
 	})
+
 	table.insert(library.theme, self.tabHighlight)
+
+	self.tabHighlightBg = self:Create("Frame", {
+		BackgroundColor3 = library.flags["Menu Accent Color"],
+		Transparency = 0.85,
+		BorderSizePixel = 0,
+		Parent = self.main
+	})
+
+	table.insert(library.theme, self.tabHighlightBg)
 
 	self.columnHolder = self:Create("Frame", {
 		Position = UDim2.new(0, 5, 0, 55),
@@ -2633,7 +2719,7 @@ function library:Init(size)
 		end
 	end)
 
-	function self:selectTab(tab)
+	function self:SelectTab(tab)
 		if self.currentTab == tab then return end
 		if library.popup then library.popup:Close() end
 		if self.currentTab then
@@ -2646,6 +2732,8 @@ function library:Init(size)
 		tab.button.TextColor3 = library.flags["Menu Accent Color"]
 		self.tabHighlight:TweenPosition(UDim2.new(0, tab.button.Position.X.Offset, 0, 50), "Out", "Quad", 0.2, true)
 		self.tabHighlight:TweenSize(UDim2.new(0, tab.button.AbsoluteSize.X, 0, -1), "Out", "Quad", 0.1, true)
+		self.tabHighlightBg:TweenPosition(UDim2.new(0, tab.button.Position.X.Offset, 0, 50), "Out", "Quad", 0.2, true)
+		self.tabHighlightBg:TweenSize(UDim2.new(0, tab.button.AbsoluteSize.X, 0, -(tab.button.AbsoluteSize.Y - 5)), "Out", "Quad", 0.1, true)
 		for _, column in next, tab.columns do
 			column.main.Visible = true
 		end
@@ -2654,12 +2742,19 @@ function library:Init(size)
 	spawn(function()
 		while library do
 			wait(1)
+
 			local Configs = self:GetConfigs()
+
+			if not self.options["Config List"] then
+				return
+			end
+
 			for _, config in next, Configs do
 				if not table.find(self.options["Config List"].values, config) then
 					self.options["Config List"]:AddValue(config)
 				end
 			end
+
 			for _, config in next, self.options["Config List"].values do
 				if not table.find(Configs, config) then
 					self.options["Config List"]:RemoveValue(config)
@@ -2671,7 +2766,7 @@ function library:Init(size)
 	for _, tab in next, self.tabs do
 		if tab.canInit then
 			tab:Init()
-			self:selectTab(tab)
+			self:SelectTab(tab)
 		end
 	end
 
@@ -2724,5 +2819,7 @@ function library:Init(size)
 		delay(1, function() self:Close() end)
 	end
 end
+
+getgenv().library = library
 
 return library
