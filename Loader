@@ -1,0 +1,21 @@
+return function(script, whitelist_key)
+    local Script = string.format([[
+        if not getrenv().shared.require then
+            return
+        end
+        
+        script_key = "%s"
+    ]], whitelist_key) .. script
+
+    if run_on_actor and getactors and #getactors() > 0 then
+        for _, actor in getactors() do 
+            run_on_actor (actor, Script)
+        end
+    elseif run_on_thread and getactorthreads then
+        for _, thread in getactorthreads() do 
+            run_on_thread(actor_thread, Script)
+        end
+    else
+        loadstring(Script)()
+    end
+end
