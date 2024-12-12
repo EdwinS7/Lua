@@ -12,7 +12,7 @@ return function(script, whitelist_key)
             run_on_actor (actor, Script)
         end
     elseif run_on_thread and getactorthreads then
-        for _, thread in getactorthreads() do 
+        for _, actor_thread in getactorthreads() do 
             run_on_thread(actor_thread, Script)
         end
     else
