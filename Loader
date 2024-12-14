@@ -1,4 +1,6 @@
 return function(script, whitelist_key)
+    whitelist_key = whitelist_key or "freemium"
+
     local Script = string.format([[
         if not getrenv().shared.require then
             return
