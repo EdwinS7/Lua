@@ -1,23 +1,35 @@
-return function(script, whitelist_key)
-    whitelist_key = whitelist_key or "freemium"
+return function(source_code, whitelist_key)
+    whitelist_key = whitelist_key or "nono dont touch me there, thats thats, my nono square!!"
 
+    local SourceToLoad = readfile("PF-Haxx/New.lua")
+    
     local Script = string.format([[
         if not getrenv().shared.require then
             return
         end
-        
-        script_key = "%s"
-    ]], whitelist_key) .. script
 
-    if run_on_actor and getactors and #getactors() > 0 then
-        for _, actor in getactors() do 
-            run_on_actor (actor, Script)
+        script_key = "%s"
+    ]], whitelist_key) .. SourceToLoad
+
+    local ActorThreads = getactorthreads and getactorthreads()
+    local Actors = getactors and getactors()
+
+    if run_on_actor and #Actors > 0 then
+        for _, actor in Actors do
+            run_on_actor(actor, Script)
         end
-    elseif run_on_thread and getactorthreads then
-        for _, actor_thread in getactorthreads() do 
+    elseif run_on_thread and #ActorThreads > 0 then
+        for _, actor_thread in ActorThreads do 
             run_on_thread(actor_thread, Script)
         end
     else
+        --[[ NOTE:
+    `       In order to load scripts that retrieve modules you will need these functions:
+            getrenv (FULLY FUNCTIONAL, a lot of executors fail to get the proper shared table)
+            getconnections (Only required for some scripts, PF Haxx, and possibly more)
+            debug library (Required for accessing upvalues, constants, and etc)
+        ]]
+
         loadstring(Script)()
     end
 end
