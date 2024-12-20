@@ -1,15 +1,13 @@
-return function(source_code, whitelist_key)
+local LoadScript = function(source_code, whitelist_key)
     whitelist_key = whitelist_key or "nono dont touch me there, thats thats, my nono square!!"
 
-    local SourceToLoad = readfile("PF-Haxx/New.lua")
-    
     local Script = string.format([[
         if not getrenv().shared.require then
             return
         end
 
         script_key = "%s"
-    ]], whitelist_key) .. SourceToLoad
+    ]], whitelist_key) .. source_code
 
     local ActorThreads = getactorthreads and getactorthreads()
     local Actors = getactors and getactors()
@@ -33,3 +31,5 @@ return function(source_code, whitelist_key)
         loadstring(Script)()
     end
 end
+
+return LoadScript
