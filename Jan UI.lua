@@ -202,7 +202,6 @@ function library:GetConfigs()
 		if v:sub(#v - #self.fileext + 1, #v) == self.fileext then
 			a = a + 1
 
-			-- NOTE: Haha wtf? did this while high but it gets the string AFTER the last \ or wtv tf -@fuckuneedthisfor
 			v = v:gsub("^.*[\\/]", "")
 			v = v:gsub(self.fileext, "")
 
@@ -402,7 +401,7 @@ library.createToggle = function(option, parent)
 		Size = UDim2.new(1, 0, 1, 0),
 		BackgroundTransparency = 1,
 		Text = option.text .. (option.warning and " \u{26A0}\u{FE0F}" or ""), -- ⚠️
-		TextColor3 = option.state and Color3.fromRGB(210, 210, 210) or Color3.fromRGB(180, 180, 180),
+		TextColor3 = option.warning and (option.state and Color3.fromRGB(255, 160, 60) or Color3.fromRGB(215, 140, 20)) or (option.state and Color3.fromRGB(210, 210, 210) or Color3.fromRGB(180, 180, 180)),
 		TextSize = 15,
 		Font = Enum.Font.Code,
 		TextXAlignment = Enum.TextXAlignment.Left,
@@ -417,7 +416,7 @@ library.createToggle = function(option, parent)
 		if option.special then
 			option.title.TextColor3 = library.flags["Menu Accent Color"]
 		elseif option.warning then
-			option.title.TextColor3 = Color3.fromRGB(255, 160, 60)
+			option.title.TextColor3 = option.warning and (option.state and Color3.fromRGB(255, 160, 60) or Color3.fromRGB(215, 140, 20)) or (option.state and Color3.fromRGB(210, 210, 210) or Color3.fromRGB(180, 180, 180))
 		end
 		
 		if input.UserInputType.Name == "MouseButton1" then
@@ -475,7 +474,7 @@ library.createToggle = function(option, parent)
 		if option.special then
 			option.title.TextColor3 = library.flags["Menu Accent Color"]
 		elseif option.warning then
-			option.title.TextColor3 = Color3.fromRGB(255, 160, 60)
+			option.title.TextColor3 = option.warning and (option.state and Color3.fromRGB(255, 160, 60) or Color3.fromRGB(215, 140, 20)) or (option.state and Color3.fromRGB(210, 210, 210) or Color3.fromRGB(180, 180, 180))
 		end
 
 		if option.style then
@@ -1781,7 +1780,7 @@ library.createColor = function(option, parent)
 		library.flags[self.flag] = newColor
 		self.color = newColor
 		if not nocallback then
-			self.callback(newColor)
+			self.callback(newColor, option.trans)
 		end
 	end
 
@@ -1793,8 +1792,9 @@ library.createColor = function(option, parent)
 			end
 			self.trans = value
 			library.flags[self.flag .. " Transparency"] = 1 - value
-			self.calltrans(value)
+			self.callback(option.color, value)
 		end
+		
 		option:SetTrans(option.trans)
 	end
 
@@ -2164,7 +2164,6 @@ function library:AddTab(title, pos)
 				option.text = tostring(option.text)
 				option.color = typeof(option.color) == "table" and Color3.new(option.color[1], option.color[2], option.color[3]) or option.color or Color3.new(1, 1, 1)
 				option.callback = typeof(option.callback) == "function" and option.callback or (option.text == "Menu accent color" and UpdateAccentColor or function() end)
-				option.calltrans = typeof(option.calltrans) == "function" and option.calltrans or (option.calltrans == 1 and option.callback) or function() end
 				option.open = false
 				option.trans = tonumber(option.trans)
 				option.subcount = 1
@@ -2565,6 +2564,9 @@ function library:Init(size)
 	if self.hasInit then return end
 	self.hasInit = true
 
+	-- Fucking pf niggers idc hotfix of the centery!!!
+	setthreadidentity(7)
+
 	self.base = library:Create("ScreenGui", {IgnoreGuiInset = true, ZIndexBehavior = Enum.ZIndexBehavior.Global})
 	if runService:IsStudio() then
 		self.base.Parent = script.Parent.Parent
@@ -2594,21 +2596,21 @@ function library:Init(size)
 		Parent = self.main
 	})
 
-	self:Create("TextLabel", {
+	library.TitleInstance = self:Create("TextLabel", {
 		Position = UDim2.new(0, 6, 0, -1),
 		Size = UDim2.new(0, 0, 0, 20),
 		BackgroundTransparency = 1,
 		Text = tostring(self.title),
 		Font = Enum.Font.Code,
 		TextSize = 18,
-		TextColor3 = Color3.new(1, 1, 1),
+		TextColor3 = library.flags["Menu Accent Color"],
 		TextXAlignment = Enum.TextXAlignment.Left,
 		Parent = self.main
 	})
 
 	self:Create("TextLabel", {
-		Position = UDim2.new(1, -106, 0, -1), -- Dock to the right with padding
-    	Size = UDim2.new(0, 100, 0, 20),     -- Fixed width for the text
+		Position = UDim2.new(1, -106, 0, -1),
+    	Size = UDim2.new(0, 100, 0, 20), 
 		BackgroundTransparency = 1,
 		Text = tostring(self.status),
 		Font = Enum.Font.Code,
