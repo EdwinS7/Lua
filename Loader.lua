@@ -12,7 +12,7 @@ local LoadScript = function(source_code, whitelist_key)
     ]], whitelist_key) .. source_code
 
     local GetActors = getactorthreads or getdeletedactors or getactors
-    local RunOnParallel = run_on_actor or run_on_thread
+    local RunOnParallel = run_on_thread or run_on_actor
 
     if GetActors and #GetActors() > 0 then
         for _, actor in GetActors() do
