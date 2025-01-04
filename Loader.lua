@@ -4,38 +4,18 @@ local LoadScript = function(source_code, whitelist_key)
     local Script = string.format([[
         if not getrenv().shared.require then
             return
-        end; 
+        end
         
         script_key = '%s';
     ]], whitelist_key) .. source_code
 
-    local DeletedActors = getdeletedactors and getdeletedactors()
-    local ActorThreads = getactorthreads and getactorthreads()
-    local Actors = getactors and getactors()
+    local GetActors = getactorthreads or getdeletedactors or getactors
+    local RunOnParallel = run_on_actor or run_on_thread
 
-    if run_on_actor then
-        if Actors and #Actors > 0 then
-            for _, actor in Actors do
-                run_on_actor(actor, Script)
-            end
-        elseif DeletedActors and #DeletedActors > 0 then
-            for _, actor in DeletedActors do
-                run_on_actor(actor, Script)
-            end
+    if GetActors and #GetActors > 0 then
+        for _, actor in GetActors() do
+            RunOnParallel(actor, Script)
         end
-    elseif run_on_thread and ActorThreads and #ActorThreads > 0 then
-        for _, actor_thread in ActorThreads do 
-            run_on_thread(actor_thread, Script)
-        end
-    else
-        --[[ NOTE:
-    `       In order to load scripts that retrieve modules you will need these functions:
-            getrenv (FULLY FUNCTIONAL, a lot of executors fail to get the proper shared table)
-            getconnections (Only required for some scripts, PF Haxx, and possibly more)
-            debug library (Required for accessing upvalues, constants, and etc)
-        ]]
-
-        loadstring(Script)()
     end
 end
 
