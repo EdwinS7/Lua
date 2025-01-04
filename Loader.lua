@@ -1,3 +1,5 @@
+-- This note is here because github is being retarded and wouldn't update the raw file!
+
 local LoadScript = function(source_code, whitelist_key)
     whitelist_key = whitelist_key or "nono dont touch me there, thats thats, my nono square!!"
 
