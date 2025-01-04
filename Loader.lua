@@ -1,4 +1,5 @@
--- NOTE: Phantom Forces destorys the actor upon the game loading, exploits like Argon, and Swift both wont work since they look the Actor instance.
+-- NOTE: Phantom Forces destorys the actor upon the game loading.
+-- NOTE: Exploits like Argon, and Swift both wont work since they search for the Actors instance.
 
 local LoadScript = function(source_code, whitelist_key)
     whitelist_key = whitelist_key or "nono dont touch me there, thats thats, my nono square!!"
